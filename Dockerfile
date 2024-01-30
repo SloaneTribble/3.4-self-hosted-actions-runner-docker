@@ -22,3 +22,15 @@ WORKDIR /GHA
 # runner linux release into the GHA home folder
 RUN curl -o actions-runner-osx-x64-2.312.0.tar.gz -L https://github.com/actions/runner/releases/download/v2.312.0/actions-runner-osx-x64-2.312.0.tar.gz
 RUN tar xzf ./actions-runner-osx-x64-2.312.0.tar.gz
+
+# Make sure that the GHA user owns the script from #5 and that it is executable
+RUN chown GHA:GHA config-and-run.sh
+RUN chmod +x config-and-run.sh
+
+# Set the docker image to run as the GHA user
+USER GHA
+
+ENTRYPOINT [ "./config-and-run.sh" ]
+
+
+
