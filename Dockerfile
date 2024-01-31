@@ -1,20 +1,34 @@
-# Use Alpine Linux as base image
-FROM alpine:3.19.1
+# Use Ubuntu Linux as base image
+# Must specify platform to build image on M1
+FROM --platform=linux/amd64 ubuntu:20.04
 
+# Prevents installdependencies.sh from prompting the user and blocking the image creation
+ARG DEBIAN_FRONTEND=noninteractive
 
 # Update package repositories and install/update packages
 # jq is a command-line JSON processor
-RUN apk update && \
-    apk upgrade && \
-    apk add --no-cache \
+RUN apt update -y && \
+    apt upgrade -y && \
+    apt install -y \
     jq \
     curl \
     bash
 
+# Install .NET Core 6.0 dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    libc6 \
+    libgcc1 \
+    libgssapi-krb5-2 \
+    libicu66 \
+    libssl1.1 \
+    libstdc++6 \
+    zlib1g \
+    && rm -rf /var/lib/apt/lists/*
+
 # Set up a non-root user named "GHA"
-# -D removes need for user to have a password
-# -u 1000 sets UID to 1000 (omitting for now -- necessary?)
-RUN adduser -D GHA
+# -m creates a home directory for "GHA"
+RUN useradd -m GHA
 
 # Download and unzip the latest GitHub actions 
 # runner linux release into the GHA home folder
@@ -27,8 +41,17 @@ COPY config-and-run.sh config-and-run.sh
 
 # Make sure that the GHA user owns the runner script and that it is executable
 # -R performs the operation recursively
-RUN chown -R GHA:GHA config-and-run.sh
+RUN chown -R GHA:GHA /home/GHA
+RUN chown GHA:GHA config-and-run.sh
 RUN chmod +x config-and-run.sh
+
+# Set environment variables
+ENV REPO="SloaneTribble/3.4-self-hosted-actions-runner-docker"
+
+# Create mount point for repo and token
+RUN --mount=type=secret,id=REPO,dst=/run/secrets/repo.txt cat /run/secrets/repo.txt
+RUN --mount=type=secret,id=TOKEN,dst=/run/secrets/token.txt cat /run/secrets/token.txt
+
 
 # Set the docker image to run as the GHA user
 USER GHA
