@@ -1,3 +1,5 @@
+# Adapted from https://github.com/beikeni/github-runner-dockerfile
+
 # Use Ubuntu Linux as base image
 # Must specify platform to build image on M1
 FROM --platform=linux/amd64 ubuntu:20.04
