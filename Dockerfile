@@ -48,11 +48,15 @@ RUN chown GHA:GHA config-and-run.sh
 RUN chmod +x config-and-run.sh
 
 # Set environment variables
-ENV REPO="SloaneTribble/3.4-self-hosted-actions-runner-docker"
+# ENV REPO="SloaneTribble/3.4-self-hosted-actions-runner-docker"
 
-# Create mount point for repo and token
-RUN --mount=type=secret,id=REPO,dst=/run/secrets/repo.txt cat /run/secrets/repo.txt
-RUN --mount=type=secret,id=TOKEN,dst=/run/secrets/token.txt cat /run/secrets/token.txt
+# Set up environment variables to be filled at runtime
+ENV REPO=""
+ENV TOKEN=""
+
+# # Create mount point for repo and token -- NON
+# RUN --mount=type=secret,id=REPO,dst=/run/secrets/repo.txt cat /run/secrets/repo.txt
+# RUN --mount=type=secret,id=TOKEN,dst=/run/secrets/token.txt cat /run/secrets/token.txt
 
 
 # Set the docker image to run as the GHA user
